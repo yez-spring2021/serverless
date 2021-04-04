@@ -59,4 +59,3 @@ jobs:
           --function-name webapp_lambda \
           --s3-bucket serverless.dev.zhenyuye.me \
           --s3-key csye6225-lambda.zip \
-          --publish true
