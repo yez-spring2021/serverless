@@ -52,3 +52,11 @@ jobs:
           --s3-location bucket=${{ env.CODE_DEPLOY_BUCKET_NAME }},bundleType=yaml,key=appspec.yml \
           --auto-rollback-configuration enabled=true,events=DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM,DEPLOYMENT_STOP_ON_REQUEST)
           echo "$deploymentId"
+      - name: Update Function
+        run: |
+          echo "Updating Function"
+          aws lambda update-function-code \
+          --function-name webapp_lambda \
+          --s3-bucket serverless.dev.zhenyuye.me \
+          --s3-key csye6225-lambda.zip \
+          --publish true
