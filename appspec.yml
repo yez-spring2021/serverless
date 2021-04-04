@@ -4,6 +4,6 @@ Resources:
       Type: AWS::Lambda::Function
       Properties:
         Name: "csye6225-sendEmail"
-        Alias: "csye6225-sendEmail"
-        CurrentVersion: "2"
-        TargetVersion: "3"
+        Alias: "sendEmail"
+        CurrentVersion: "1"
+        TargetVersion: "2"
