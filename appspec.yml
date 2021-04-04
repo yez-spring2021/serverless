@@ -5,5 +5,5 @@ Resources:
       Properties:
         Name: "csye6225-sendEmail"
         Alias: "csye6225-sendEmail"
-        CurrentVersion: "$Latest"
-        TargetVersion: "$Latest"
+        CurrentVersion: "2"
+        TargetVersion: "3"
