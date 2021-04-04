@@ -1,0 +1,55 @@
+name: Build and Deploy Lambda
+
+env:
+  ARTIFACT_NAME: csye6225-lambda.zip
+  CODEDEPLOY_APPLICATION_NAME: ${{ secrets.CODEDEPLOY_LAMBDA_APPLICATION_NAME }}
+  CODEDEPLOY_APPLICATION_DEPLOYMENT_GROUP_NAME: ${{ secrets.CODEDEPLOY_LAMBDA_APPLICATION_DEPLOYMENT_GROUP_NAME }}
+  AWS_REGION: us-east-1
+
+  CODE_DEPLOY_BUCKET_NAME: ${{ secrets.CODE_DEPLOY_SERVERLESS_BUCKET_NAME }}
+  DEV_GHACTION_AWS_ACCESS_KEY_ID: ${{ secrets.DEV_GHACTION_AWS_ACCESS_KEY_ID }}
+  DEV_GHACTION_AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_GHACTION_AWS_SECRET_ACCESS_KEY }}
+  PROD_CODEDEPLOY_BUCKET_NAME: severless.prod.zhenyuye.me
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  code_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build Deployment Artifact
+        run: |
+          echo "Build Deployment Artifact ${{ github.run_number }}"
+          pwd
+          ls -al
+          mkdir -p codedeploy_artifact
+          zip -r ${{ env.ARTIFACT_NAME }} *.js *.yml
+          mv ${{ env.ARTIFACT_NAME}} codedeploy_artifact/
+          cd codedeploy_artifact
+          pwd
+          ls -al
+          cd ..
+          ls -al
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.DEV_GHACTION_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.DEV_GHACTION_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Copy Artifact to S3
+        run:
+          aws s3 sync ./codedeploy_artifact s3://${{ env.CODE_DEPLOY_BUCKET_NAME}}
+      - name: CodeDeploy API Call
+        run: |
+          echo "CodeDeploy"
+          deploymentId=$(aws deploy create-deployment --region ${{env.AWS_REGION}} \
+          --application-name ${{env.CODEDEPLOY_APPLICATION_NAME}} \
+          --deployment-config-name CodeDeployDefault.LambdaAllAtOnce \
+          --deployment-group-name ${{env.CODEDEPLOY_APPLICATION_DEPLOYMENT_GROUP_NAME}} \
+          --s3-location bucket=${{ env.CODE_DEPLOY_BUCKET_NAME }},bundleType=zip,key=${{ env.ARTIFACT_NAME }} \
+          --auto-rollback-configuration enabled=true,events=DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM,DEPLOYMENT_STOP_ON_REQUEST)
+          echo "$deploymentId"
