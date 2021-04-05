@@ -3,7 +3,7 @@ const ses = new AWS.SES({region: 'us-east-1'});
 const dynamoDB = new AWS.DynamoDB();
 const client  = new AWS.DynamoDB.DocumentClient();
 const tableName = "csye6225"; 
-const emailSource = process.ENV.EMAIL_SOURCE;
+const emailSource = process.env.EMAIL_SOURCE;
 exports.handler = (event, context, callback) => {
   const message = JSON.parse(event.Records[0].Sns.Message);
   
