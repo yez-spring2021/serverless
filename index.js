@@ -40,7 +40,7 @@ exports.handler = (event, context, callback) => {
       Destination: {
         ToAddresses: [message.email]
       },
-      Source: "webapp@dev.zhenyuye.me",
+      Source: emailSource,
       Message: {
         Subject: {
           Data:"Webapp Notification"
