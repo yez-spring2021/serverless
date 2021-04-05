@@ -57,5 +57,6 @@ jobs:
           echo "Updating Function"
           aws lambda update-function-code \
           --function-name webapp_lambda \
-          --s3-bucket serverless.dev.zhenyuye.me \
+          --s3-bucket ${{env.CODE_DEPLOY_BUCKET_NAME}} \
           --s3-key csye6225-lambda.zip \
+          --publish
