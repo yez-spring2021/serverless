@@ -64,6 +64,29 @@ jobs:
           --function-version ${newVersion} \
           --name sendEmail)
           echo "$output"
+      - name: pack appspec
+        run: |
+          ls
+          mkdir -p codedeploy
+          cat appspec.yml
+          mv *yml codedeploy/
+          cd codedeploy
+          pwd
+      - name: upload appspec to s3
+        run: |
+          pwd
+          aws s3 sync ./codedeploy s3://${{ env.CODE_DEPLOY_BUCKET_NAME}}
+      - name: CodeDeploy API Call
+        run: |
+          echo "CodeDeploy"
+          deploymentId=$(aws deploy create-deployment --region ${{env.AWS_REGION}} \
+          --application-name ${{env.CODEDEPLOY_APPLICATION_NAME}} \
+          --deployment-config-name CodeDeployDefault.LambdaAllAtOnce \
+          --deployment-group-name ${{env.CODEDEPLOY_APPLICATION_DEPLOYMENT_GROUP_NAME}} \
+          --s3-location bucket=${{ env.CODE_DEPLOY_BUCKET_NAME }},bundleType=yaml,key=appspec.yml \
+          --auto-rollback-configuration enabled=true,events=DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM,DEPLOYMENT_STOP_ON_REQUEST)
+          echo "$deploymentId"
+          
 
 
         
