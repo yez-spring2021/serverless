@@ -4,6 +4,7 @@ const dynamoDB = new AWS.DynamoDB();
 const client  = new AWS.DynamoDB.DocumentClient();
 const tableName = "csye6225"; 
 const emailSource = process.env.EMAIL_SOURCE;
+const domainName = process.env.DOMAIN_NAME;
 console.log(emailSource);
 exports.handler = (event, context, callback) => {
   const message = JSON.parse(event.Records[0].Sns.Message);
@@ -68,7 +69,8 @@ exports.handler = (event, context, callback) => {
   function getHTMLData() {
     let link = "<br/>";
     if(message.link) {
-      link = `<a href="${message.link}">${message.link}</a>`;
+      const url = `http://${domainName}/${message.link}`;
+      link = `<a href="${url}">${url}</a>`;
     }
     return `<html>
     <head>
