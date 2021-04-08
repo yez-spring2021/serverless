@@ -58,12 +58,6 @@ jobs:
           newVersion=$(echo "$output" | jq -r '.Version')
           echo "        TargetVersion: \"${newVersion}\"" >> appspec.yml
           cat appspec.yml
-          echo "Update lambda alias to latest version...."
-          res=$(aws lambda update-alias \
-          --function-name webapp_lambda \
-          --function-version ${newVersion} \
-          --name sendEmail)
-          echo "$output"
       - name: pack appspec
         run: |
           ls
