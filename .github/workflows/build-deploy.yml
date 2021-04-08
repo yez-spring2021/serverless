@@ -62,7 +62,7 @@ jobs:
           res=$(aws lambda update-alias \
           --function-name webapp_lambda \
           --function-version ${newVersion} \
-          --sendEmail)
+          --name sendEmail)
           echo "$output"
 
 
