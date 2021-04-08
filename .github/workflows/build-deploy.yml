@@ -40,9 +40,9 @@ jobs:
           aws-secret-access-key: ${{ env.DEV_GHACTION_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       - name: get current alias version
-        id: set version
         run: |
           output=$(aws lambda get-alias --function-name webapp_lambda --name sendEmail)
-          echo "$output"
-          echo "::set-output name=version::${{fromJson($output).FunctionVersion}}"
-          echo "---$output" | jq -r '.FunctionVersion'
+          echo "----$output"
+          echo "$output" | jq -r '.FunctionVersion'
+
+        
