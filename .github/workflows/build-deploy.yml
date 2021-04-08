@@ -17,24 +17,32 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  get_lambda_current_alias:
+  code_deploy:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.set-version.outputs.version }}
     steps:
-      - id: set-version
+      - uses: actions/checkout@v2
+      - name: Build Deployment Artifact
+        run: |
+          echo "Build Deployment Artifact ${{ github.run_number }}"
+          pwd
+          ls -al
+          mkdir -p codedeploy_artifact
+          zip -r ${{ env.ARTIFACT_NAME }} *.js
+          mv ${{ env.ARTIFACT_NAME}} codedeploy_artifact/
+          mv *yml codedeploy_artifact/
+          cd codedeploy_artifact
+          pwd
+          ls -al
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ env.DEV_GHACTION_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.DEV_GHACTION_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+      - name: get current alias version
+        id: set version
         run: |
           output=$(aws lambda get-alias --function-name webapp_lambda --name sendEmail)
           echo "$output"
           echo "::set-output name=version::${{fromJson($output).FunctionVersion}}"
           echo "---$output" | jq -r '.FunctionVersion'
-          
-
-
-  
