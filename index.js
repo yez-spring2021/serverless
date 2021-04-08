@@ -4,6 +4,7 @@ const dynamoDB = new AWS.DynamoDB();
 const client  = new AWS.DynamoDB.DocumentClient();
 const tableName = "csye6225"; 
 const emailSource = process.env.EMAIL_SOURCE;
+console.log(emailSource);
 exports.handler = (event, context, callback) => {
   const message = JSON.parse(event.Records[0].Sns.Message);
   

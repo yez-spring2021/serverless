@@ -5,5 +5,3 @@ Resources:
       Properties:
         Name: "webapp_lambda"
         Alias: "sendEmail"
-        CurrentVersion: "1"
-        TargetVersion: "1"
