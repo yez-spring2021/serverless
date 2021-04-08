@@ -17,46 +17,24 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  code_deploy:
+  get_lambda_current_alias:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Build Deployment Artifact
-        run: |
-          echo "Build Deployment Artifact ${{ github.run_number }}"
-          pwd
-          ls -al
-          mkdir -p codedeploy_artifact
-          zip -r ${{ env.ARTIFACT_NAME }} *.js
-          mv ${{ env.ARTIFACT_NAME}} codedeploy_artifact/
-          mv *yml codedeploy_artifact/
-          cd codedeploy_artifact
-          pwd
-          ls -al
+      - id: set-version
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ env.DEV_GHACTION_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.DEV_GHACTION_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: Copy Artifact to S3
-        run:
-          aws s3 sync ./codedeploy_artifact s3://${{ env.CODE_DEPLOY_BUCKET_NAME}}
-      - name: CodeDeploy API Call
         run: |
-          echo "CodeDeploy"
-          deploymentId=$(aws deploy create-deployment --region ${{env.AWS_REGION}} \
-          --application-name ${{env.CODEDEPLOY_APPLICATION_NAME}} \
-          --deployment-config-name CodeDeployDefault.LambdaAllAtOnce \
-          --deployment-group-name ${{env.CODEDEPLOY_APPLICATION_DEPLOYMENT_GROUP_NAME}} \
-          --s3-location bucket=${{ env.CODE_DEPLOY_BUCKET_NAME }},bundleType=yaml,key=appspec.yml \
-          --auto-rollback-configuration enabled=true,events=DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM,DEPLOYMENT_STOP_ON_REQUEST)
-          echo "$deploymentId"
-      - name: Update Function
-        run: |
-          echo "Updating Function"
-          aws lambda update-function-code \
-          --function-name webapp_lambda \
-          --s3-bucket ${{env.CODE_DEPLOY_BUCKET_NAME}} \
-          --s3-key csye6225-lambda.zip \
-          --publish
+          output=$(aws lambda get-alias --function-name webapp_lambda --name sendEmail)
+          echo "$output"
+          echo "::set-output name=version::${{fromJson($output).FunctionVersion}}"
+          echo "---$output" | jq -r '.FunctionVersion'
+          
+
+
+  
