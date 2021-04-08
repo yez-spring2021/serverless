@@ -46,7 +46,7 @@ jobs:
           echo "        CurrentVersion: \"$version\"" >> appspec.yml
       - name: Upload code to s3
         run:
-          aws s3 sync ./codedeploy_artifact/${{ env.ARTIFACT_NAME}} s3://${{ env.CODE_DEPLOY_BUCKET_NAME}}
+          aws s3 sync ./codedeploy_artifact/ s3://${{ env.CODE_DEPLOY_BUCKET_NAME}}
       - name: Update lambda function
         run: |
           echo "Update function...."
