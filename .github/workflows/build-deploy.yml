@@ -10,6 +10,8 @@ env:
   DEV_GHACTION_AWS_ACCESS_KEY_ID: ${{ secrets.DEV_GHACTION_AWS_ACCESS_KEY_ID }}
   DEV_GHACTION_AWS_SECRET_ACCESS_KEY: ${{ secrets.DEV_GHACTION_AWS_SECRET_ACCESS_KEY }}
   PROD_CODEDEPLOY_BUCKET_NAME: severless.prod.zhenyuye.me
+  PROD_GHACTION_AWS_ACCESS_KEY_ID: ${{ secrets.PROD_GHACTION_AWS_ACCESS_KEY_ID }}
+  PROD_GHACTION_AWS_SECRET_ACCESS_KEY: ${{ secrets.PROD_GHACTION_AWS_SECRET_ACCESS_KEY }}
 
 on:
   push:
@@ -36,8 +38,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ env.DEV_GHACTION_AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.DEV_GHACTION_AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.PROD_GHACTION_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.PROD_GHACTION_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       - name: get current alias version
         run: |
@@ -46,13 +48,13 @@ jobs:
           echo "        CurrentVersion: \"$version\"" >> appspec.yml
       - name: Upload code to s3
         run:
-          aws s3 sync ./codedeploy_artifact/ s3://${{ env.CODE_DEPLOY_BUCKET_NAME}}
+          aws s3 sync ./codedeploy_artifact/ s3://${{ env.PROD_CODEDEPLOY_BUCKET_NAME}}
       - name: Update lambda function
         run: |
           echo "Update function...."
           output=$(aws lambda update-function-code \
           --function-name webapp_lambda \
-          --s3-bucket ${{env.CODE_DEPLOY_BUCKET_NAME}} \
+          --s3-bucket ${{env.PROD_CODEDEPLOY_BUCKET_NAME}} \
           --s3-key csye6225-lambda.zip \
           --publish)
           newVersion=$(echo "$output" | jq -r '.Version')
@@ -69,7 +71,7 @@ jobs:
       - name: upload appspec to s3
         run: |
           pwd
-          aws s3 sync ./codedeploy s3://${{ env.CODE_DEPLOY_BUCKET_NAME}}
+          aws s3 sync ./codedeploy s3://${{ env.PROD_CODEDEPLOY_BUCKET_NAME}}
       - name: CodeDeploy API Call
         run: |
           echo "CodeDeploy"
@@ -77,7 +79,7 @@ jobs:
           --application-name ${{env.CODEDEPLOY_APPLICATION_NAME}} \
           --deployment-config-name CodeDeployDefault.LambdaAllAtOnce \
           --deployment-group-name ${{env.CODEDEPLOY_APPLICATION_DEPLOYMENT_GROUP_NAME}} \
-          --s3-location bucket=${{ env.CODE_DEPLOY_BUCKET_NAME }},bundleType=yaml,key=appspec.yml \
+          --s3-location bucket=${{ env.PROD_CODEDEPLOY_BUCKET_NAME }},bundleType=yaml,key=appspec.yml \
           --auto-rollback-configuration enabled=true,events=DEPLOYMENT_FAILURE,DEPLOYMENT_STOP_ON_ALARM,DEPLOYMENT_STOP_ON_REQUEST)
           echo "$deploymentId"
           
